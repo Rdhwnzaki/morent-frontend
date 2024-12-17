@@ -1,83 +1,108 @@
-import { useEffect } from "react";
-import SideImage from "../assets/side-image.jpg";
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { loginSuccess, loginFailure } from '../redux/auth/authSlice';
+import { loginApi } from '../redux/auth/authApi';
+import SideImage from '../assets/side-image.jpg';
+import { Formik, Field, Form, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+import toast from 'react-hot-toast';
 
-function Login() {
+const validationSchema = Yup.object({
+    username: Yup.string()
+        .required('Username is required'),
+    password: Yup.string()
+        .required('Password is required'),
+});
+
+const Login = () => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    const handleLogin = async (values) => {
+        try {
+            const { username, password } = values;
+            const data = await loginApi(username, password);
+            dispatch(loginSuccess(data));
+            sessionStorage.setItem("authUser", JSON.stringify(data.data));
+            sessionStorage.setItem("token", data.token);
+            navigate('/home');
+        } catch (error) {
+            dispatch(loginFailure(error));
+            toast.error(error.message)
+        }
+    };
+
     useEffect(() => {
         document.title = "Login - Morent";
     }, []);
 
     return (
-        <div className="flex h-screen">
+        <div className="flex h-screen bg-gray-100">
             <div className="grid grid-cols-1 md:grid-cols-12 w-full h-screen">
-                <div className="col-span-4 flex items-center justify-center p-6 bg-gray-50">
-                    <div className="p-8 rounded-lg shadow-xl bg-white max-w-md w-full">
-                        <h1 className="text-5xl font-extrabold text-center text-[#3563e9] mb-2 tracking-wide">
+                <div className="col-span-4 flex items-center justify-center p-6 md:p-10 bg-gradient-to-tl from-[#3563e9] to-[#6a9cfd]">
+                    <div className="p-8 rounded-xl shadow-lg bg-white w-full max-w-md mx-auto">
+                        <h2 className="text-5xl font-extrabold text-center text-[#3563e9] mb-6">
                             MORENT
-                        </h1>
-                        <p className="text-gray-500 text-center mb-6">
-                            Login into your account to continue
+                        </h2>
+                        <p className="text-lg text-center text-gray-600 mb-6">
+                            Please sign in to your account
                         </p>
 
-                        <form>
-                            <div className="mb-5">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Username
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="Enter your username"
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#3563e9] focus:outline-none"
-                                />
-                            </div>
-                            <div className="mb-6">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Password
-                                </label>
-                                <input
-                                    type="password"
-                                    placeholder="Enter your password"
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#3563e9] focus:outline-none"
-                                />
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-[#3563e9] text-white py-2 rounded-md font-semibold hover:bg-[#2749b3] transition-all duration-300"
-                            >
-                                Login
-                            </button>
-                        </form>
+                        <Formik
+                            initialValues={{ username: '', password: '' }}
+                            validationSchema={validationSchema}
+                            onSubmit={handleLogin}
+                        >
+                            <Form>
+                                <div className="mb-6">
+                                    <Field
+                                        type="text"
+                                        name="username"
+                                        placeholder="Username"
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <ErrorMessage name="username" component="div" className="text-red-500 text-sm" />
+                                </div>
+                                <div className="mb-6">
+                                    <Field
+                                        type="password"
+                                        name="password"
+                                        placeholder="Password"
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <ErrorMessage name="password" component="div" className="text-red-500 text-sm" />
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="w-full bg-[#3563e9] text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300"
+                                >
+                                    Login
+                                </button>
+                            </Form>
+                        </Formik>
 
-                        <div className="mt-6 text-center">
-                            <p className="text-gray-500 text-sm mb-2">
-                                Don’t have an account?
+                        <div className="text-center mt-6">
+                            <p className="text-sm text-gray-500">
+                                {"Don't have an account?"}
+                                <button
+                                    onClick={() => navigate('/register')}
+                                    className="text-[#3563e9] font-semibold hover:underline"
+                                >
+                                    Register here
+                                </button>
                             </p>
-                            <button
-                                type="button"
-                                className="w-full bg-gray-200 text-[#3563e9] py-2 rounded-md font-semibold hover:bg-gray-300 transition-all duration-300"
-                            >
-                                Register
-                            </button>
                         </div>
                     </div>
                 </div>
 
                 <div
-                    className="hidden md:block col-span-8 h-full bg-cover bg-center relative"
+                    className="hidden md:block col-span-8 h-full bg-cover bg-center rounded-lg"
                     style={{ backgroundImage: `url(${SideImage})` }}
-                >
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#3563e9] via-[#3563e9]/40 to-transparent"></div>
-                    <div className="absolute bottom-8 left-8 text-white">
-                        <h2 className="text-4xl font-bold mb-2">
-                            Welcome to Morent
-                        </h2>
-                        <p className="text-lg">
-                            The best car rental service for your convenience.
-                        </p>
-                    </div>
-                </div>
+                ></div>
             </div>
         </div>
     );
-}
+};
 
 export default Login;

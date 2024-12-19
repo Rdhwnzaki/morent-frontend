@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { loginSuccess, loginFailure } from '../redux/auth/authSlice';
-import { loginApi } from '../redux/auth/authApi';
+import { registerSuccess, registerFailure } from '../redux/auth/authSlice';
+import { registerApi } from '../redux/auth/authApi';
 import SideImage from '../assets/side-image.jpg';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -10,33 +10,36 @@ import toast from 'react-hot-toast';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const validationSchema = Yup.object({
+    name: Yup.string().required("Name is required"),
+    email: Yup.string().required("Email is required"),
     username: Yup.string().required('Username is required'),
     password: Yup.string().required('Password is required'),
 });
 
-const Login = () => {
+const Register = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
 
     const toggleCheck = () => { setShowPassword(!showPassword) }
 
-    const handleLogin = async (values) => {
+    const handleRegister = async (values) => {
         try {
-            const { username, password } = values;
-            const data = await loginApi(username, password);
-            dispatch(loginSuccess(data));
-            sessionStorage.setItem("authUser", JSON.stringify(data.data));
-            sessionStorage.setItem("token", data.token);
-            navigate('/home');
+            const { name, email, username, password } = values;
+            const data = await registerApi(name, email, username, password);
+            dispatch(registerSuccess(data));
+            toast.success(data.message)
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
         } catch (error) {
-            dispatch(loginFailure(error));
+            dispatch(registerFailure(error));
             toast.error(error.message);
         }
     };
 
     useEffect(() => {
-        document.title = "Login - Morent";
+        document.title = "Register - Morent";
     }, []);
 
     return (
@@ -53,15 +56,43 @@ const Login = () => {
                         </p>
 
                         <p className="text-lg text-center text-gray-600 mb-6">
-                            Please log in to your account
+                            Please register your account
                         </p>
 
                         <Formik
-                            initialValues={{ username: '', password: '' }}
+                            initialValues={{ name: "", email: "", username: '', password: '' }}
                             validationSchema={validationSchema}
-                            onSubmit={handleLogin}
+                            onSubmit={handleRegister}
                         >
                             <Form>
+                                <div className="mb-6">
+                                    <Field
+                                        type="text"
+                                        name="name"
+                                        placeholder="Name"
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3563e9]"
+                                    />
+                                    <ErrorMessage
+                                        name="name"
+                                        component="div"
+                                        className="text-red-500 text-sm"
+                                    />
+                                </div>
+
+                                <div className="mb-6">
+                                    <Field
+                                        type="email"
+                                        name="email"
+                                        placeholder="Email"
+                                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3563e9]"
+                                    />
+                                    <ErrorMessage
+                                        name="email"
+                                        component="div"
+                                        className="text-red-500 text-sm"
+                                    />
+                                </div>
+
                                 <div className="mb-6">
                                     <Field
                                         type="text"
@@ -104,19 +135,19 @@ const Login = () => {
                                     type="submit"
                                     className="w-full bg-[#3563e9] text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300"
                                 >
-                                    Login
+                                    Register
                                 </button>
                             </Form>
                         </Formik>
 
                         <div className="text-center mt-6">
                             <p className="text-sm text-gray-500">
-                                {"Don't have an account? "}
+                                {"Have an account? "}
                                 <button
-                                    onClick={() => navigate('/register')}
+                                    onClick={() => navigate('/login')}
                                     className="text-[#3563e9] font-semibold hover:underline"
                                 >
-                                    Register here
+                                    Login here
                                 </button>
                             </p>
                         </div>
@@ -132,4 +163,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default Register;

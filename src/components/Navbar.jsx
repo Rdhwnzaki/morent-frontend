@@ -9,10 +9,10 @@ function Navbar({ auth }) {
     return (
         <div className='h-24 content-center'>
             <div className='flex items-center'>
-                <div className='flex-none w-64 text-center font-medium text-[#3563e9] text-3xl'>
+                <div className={auth?.role === "admin" ? "hidden" : 'flex-none w-64 text-center font-medium text-[#3563e9] text-3xl'}>
                     MORENT
                 </div>
-                <div className='flex-1 w-96'>
+                <div className={auth?.role === "admin" ? 'flex-1 w-96 ms-10' : 'flex-1 w-96'}>
                     <div className='flex items-center gap-2 w-full max-w-lg p-3 bg-white rounded-full shadow-sm border border-gray-300'>
                         <FaSearch className='text-gray-500 text-lg' />
                         <input
